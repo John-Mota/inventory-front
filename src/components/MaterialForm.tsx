@@ -4,22 +4,26 @@ import { createMaterial } from "../store/inventoryThunks";
 import { clearError } from "../store/materialSlice";
 import Spinner from "./Spinner";
 
-export default function MaterialForm() {
-  const dispatch = useAppDispatch();
+interface MaterialFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
+export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModalProps) {
+  const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.material);
 
   const [name, setName] = useState("");
   const [stockQuantity, setStockQuantity] = useState<number | "">("");
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const isFormValid = name.trim().length > 0 && stockQuantity !== "" && Number(stockQuantity) >= 0;
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     dispatch(clearError());
 
-    if (!name.trim() || stockQuantity === "" || stockQuantity < 0) {
-      return;
-    }
+    if (!isFormValid) return;
 
     try {
       await dispatch(
@@ -35,100 +39,137 @@ export default function MaterialForm() {
 
       setTimeout(() => {
         setShowSuccess(false);
-      }, 3000);
+        onClose();
+      }, 1500);
     } catch {
-      // Error is already handled by the slice and interceptor
+      // Handled by slice
     }
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <div className="mx-auto max-w-lg px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-white">
-        Cadastrar Matéria-Prima
-      </h1>
-
-      {showSuccess && (
-        <div
-          className="mb-6 rounded-lg border border-green-600 bg-green-900/40 px-4 py-3 text-green-300"
-          role="alert"
-        >
-          ✅ Material salvo com sucesso!
-        </div>
-      )}
-
-      {error && (
-        <div
-          className="mb-6 rounded-lg border border-red-600 bg-red-900/40 px-4 py-3 text-red-300"
-          role="alert"
-        >
-          ❌ {error}
-        </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-xl"
-        noValidate
-      >
-        {/* Name Field */}
-        <div>
-          <label
-            htmlFor="material-name"
-            className="mb-2 block text-sm font-medium text-gray-300"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Register raw material"
+    >
+      <div className="w-full max-w-md rounded-2xl border border-gray-700 bg-gray-800 shadow-2xl">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
+          <h2 className="text-lg font-semibold text-white">New Raw Material</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+            aria-label="Close modal"
           >
-            Nome
-          </label>
-          <input
-            id="material-name"
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ex: Aço, Madeira, Plástico"
-            className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-          />
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        {/* Stock Quantity Field */}
-        <div>
-          <label
-            htmlFor="stock-quantity"
-            className="mb-2 block text-sm font-medium text-gray-300"
-          >
-            Quantidade em Estoque
-          </label>
-          <input
-            id="stock-quantity"
-            type="number"
-            required
-            min={0}
-            value={stockQuantity}
-            onChange={(e) =>
-              setStockQuantity(
-                e.target.value === "" ? "" : Number(e.target.value)
-              )
-            }
-            placeholder="Ex: 100"
-            className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-          />
-        </div>
-
-        {/* Save Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-indigo-500 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <>
-              <Spinner size="sm" />
-              Salvando...
-            </>
-          ) : (
-            "Salvar"
+        {/* Modal Body */}
+        <div className="px-6 py-5">
+          {showSuccess && (
+            <div
+              className="mb-4 rounded-lg border border-green-600 bg-green-900/40 px-4 py-3 text-green-300"
+              role="alert"
+            >
+              ✅ Material saved successfully!
+            </div>
           )}
-        </button>
-      </form>
+
+          {error && (
+            <div
+              className="mb-4 rounded-lg border border-red-600 bg-red-900/40 px-4 py-3 text-red-300"
+              role="alert"
+            >
+              ❌ {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Name Field */}
+            <div>
+              <label
+                htmlFor="material-name"
+                className="mb-2 block text-sm font-medium text-gray-300"
+              >
+                Name
+              </label>
+              <input
+                id="material-name"
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Steel, Wood, Plastic"
+                className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                autoFocus
+              />
+            </div>
+
+            {/* Stock Quantity Field */}
+            <div>
+              <label
+                htmlFor="stock-quantity"
+                className="mb-2 block text-sm font-medium text-gray-300"
+              >
+                Stock Quantity
+              </label>
+              <input
+                id="stock-quantity"
+                type="number"
+                required
+                min={0}
+                value={stockQuantity}
+                onChange={(e) =>
+                  setStockQuantity(
+                    e.target.value === "" ? "" : Number(e.target.value)
+                  )
+                }
+                placeholder="e.g. 100"
+                className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 rounded-lg border border-gray-600 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!isFormValid || loading}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-indigo-500 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Spinner size="sm" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
