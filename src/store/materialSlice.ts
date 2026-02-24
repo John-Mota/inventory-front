@@ -9,6 +9,8 @@ import {
   createMaterial,
   fetchProducts,
   createProduct,
+  deleteProduct,
+  updateProduct,
   fetchProductionSuggestions,
 } from "./inventoryThunks";
 
@@ -105,6 +107,37 @@ const materialSlice = createSlice({
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Unknown error while creating product.";
+      });
+
+    // ── deleteProduct ───────────────────────────────────────
+    builder
+      .addCase(deleteProduct.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = state.products.filter((p) => p.id !== action.payload);
+      })
+      .addCase(deleteProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Unknown error while deleting product.";
+      });
+
+    // ── updateProduct ───────────────────────────────────────
+    builder
+      .addCase(updateProduct.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        const idx = state.products.findIndex((p) => p.id === action.payload.id);
+        if (idx !== -1) state.products[idx] = action.payload;
+      })
+      .addCase(updateProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Unknown error while updating product.";
       });
 
     // ── fetchProductionSuggestions ───────────────────────────

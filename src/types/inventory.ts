@@ -8,9 +8,11 @@ export interface Product {
   id: string;
   name: string;
   value: number;
-  materials: {
-    materialId: string;
-    neededQuantity: number;
+  rawMaterials: {
+    id?: string;
+    rawMaterialId: string;
+    rawMaterialName?: string;
+    requiredQuantity: number;
   }[];
 }
 

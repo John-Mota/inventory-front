@@ -1,26 +1,25 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { createProduct, fetchMaterials } from "../store/inventoryThunks";
+import { createProduct, updateProduct, fetchMaterials } from "../store/inventoryThunks";
 import { clearError } from "../store/materialSlice";
 import Spinner from "./Spinner";
+import type { Product } from "../types/inventory";
 
 interface MaterialEntry {
-  materialId: string;
-  neededQuantity: number;
+  rawMaterialId: string;
+  requiredQuantity: number;
 }
 
 interface ProductFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialData?: Product | null;
 }
 
 function formatCurrencyInput(raw: string): string {
-  // Remove tudo que não é dígito
   const digits = raw.replace(/\D/g, "");
-  // Converte para centavos → reais
   const cents = parseInt(digits || "0", 10);
   const value = (cents / 100).toFixed(2);
-  // Formata com separador brasileiro
   const [intPart, decPart] = value.split(".");
   const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${formattedInt},${decPart}`;
@@ -31,7 +30,12 @@ function parseCurrencyValue(formatted: string): number {
   return parseInt(digits || "0", 10) / 100;
 }
 
-export default function ProductFormModal({ isOpen, onClose }: ProductFormModalProps) {
+function valueToCurrencyDisplay(val: number): string {
+  const cents = Math.round(val * 100);
+  return formatCurrencyInput(String(cents));
+}
+
+export default function ProductFormModal({ isOpen, onClose, initialData }: ProductFormModalProps) {
   const dispatch = useAppDispatch();
   const { materials, loading, error } = useAppSelector((state) => state.material);
 
@@ -39,6 +43,26 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
   const [priceDisplay, setPriceDisplay] = useState("0,00");
   const [entries, setEntries] = useState<MaterialEntry[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const isEditing = initialData !== null && initialData !== undefined;
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setName(initialData.name);
+      setPriceDisplay(valueToCurrencyDisplay(initialData.value ?? 0));
+      setEntries(
+        (initialData.rawMaterials ?? []).map((m) => ({
+          rawMaterialId: m.rawMaterialId,
+          requiredQuantity: m.requiredQuantity,
+        }))
+      );
+    } else if (isOpen && !initialData) {
+      setName("");
+      setPriceDisplay("0,00");
+      setEntries([]);
+    }
+  }, [isOpen, initialData]);
 
   useEffect(() => {
     if (isOpen && materials.length === 0) {
@@ -52,13 +76,13 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
     name.trim().length > 0 &&
     priceValue > 0 &&
     entries.length > 0 &&
-    entries.every((e) => e.materialId !== "" && e.neededQuantity > 0);
+    entries.every((e) => e.rawMaterialId !== "" && e.requiredQuantity > 0);
 
   const addEntry = () => {
     if (materials.length === 0) return;
     setEntries((prev) => [
       ...prev,
-      { materialId: materials[0].id, neededQuantity: 1 },
+      { rawMaterialId: materials[0].id, requiredQuantity: 1 },
     ]);
   };
 
@@ -83,13 +107,27 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
     if (!isFormValid) return;
 
     try {
-      await dispatch(
-        createProduct({
-          name: name.trim(),
-          value: priceValue,
-          materials: entries,
-        })
-      ).unwrap();
+      if (isEditing) {
+        await dispatch(
+          updateProduct({
+            id: initialData.id,
+            name: name.trim(),
+            value: priceValue,
+            rawMaterials: entries,
+            existingRawMaterials: (initialData.rawMaterials ?? [])
+              .filter((m) => m.id)
+              .map((m) => ({ id: m.id! })),
+          })
+        ).unwrap();
+      } else {
+        await dispatch(
+          createProduct({
+            name: name.trim(),
+            value: priceValue,
+            rawMaterials: entries,
+          })
+        ).unwrap();
+      }
 
       setName("");
       setPriceDisplay("0,00");
@@ -117,17 +155,19 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
-      aria-label="Register product"
+      aria-label={isEditing ? "Editar produto" : "Cadastrar produto"}
     >
       <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-800 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
-          <h2 className="text-lg font-semibold text-white">Novo Produto</h2>
+          <h2 className="text-lg font-semibold text-white">
+            {isEditing ? "Editar Produto" : "Novo Produto"}
+          </h2>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
-            aria-label="Close modal"
+            aria-label="Fechar modal"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -139,7 +179,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
         <div className="px-6 py-5">
           {showSuccess && (
             <div className="mb-4 rounded-lg border border-green-600 bg-green-900/40 px-4 py-3 text-green-300" role="alert">
-              ✅ Produto salvo com sucesso!
+              ✅ {isEditing ? "Produto atualizado com sucesso!" : "Produto salvo com sucesso!"}
             </div>
           )}
 
@@ -221,8 +261,8 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                       </label>
                       <select
                         id={`mat-select-${index}`}
-                        value={entry.materialId}
-                        onChange={(e) => updateEntry(index, "materialId", e.target.value)}
+                        value={entry.rawMaterialId}
+                        onChange={(e) => updateEntry(index, "rawMaterialId", e.target.value)}
                         className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                       >
                         {materials.map((m) => (
@@ -240,8 +280,8 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                         id={`mat-qty-${index}`}
                         type="number"
                         min={1}
-                        value={entry.neededQuantity}
-                        onChange={(e) => updateEntry(index, "neededQuantity", Number(e.target.value))}
+                        value={entry.requiredQuantity}
+                        onChange={(e) => updateEntry(index, "requiredQuantity", Number(e.target.value))}
                         className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                       />
                     </div>
@@ -249,7 +289,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                       type="button"
                       onClick={() => removeEntry(index)}
                       className="rounded-lg p-2 text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
-                      aria-label={`Remove material ${index + 1}`}
+                      aria-label={`Remover material ${index + 1}`}
                     >
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -277,10 +317,10 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                 {loading ? (
                   <>
                     <Spinner size="sm" />
-                    Salvando...
+                    {isEditing ? "Atualizando..." : "Salvando..."}
                   </>
                 ) : (
-                  "Salvar Produto"
+                  isEditing ? "Atualizar Produto" : "Salvar Produto"
                 )}
               </button>
             </div>

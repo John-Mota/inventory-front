@@ -77,22 +77,102 @@ export const fetchProducts = createAsyncThunk<
 });
 
 /**
- * Creates a new product with associated materials (RF007).
- * POST /products
+ * Creates a new product, then adds each raw material via the separate endpoint.
+ * 1) POST /products                        → cria o produto
+ * 2) POST /products/:id/raw-materials      → adiciona cada material
+ * 3) GET  /products/:id                    → retorna produto completo
  */
 export const createProduct = createAsyncThunk<
   Product,
-  { name: string; value: number; materials: { materialId: string; neededQuantity: number }[] },
+  { name: string; value: number; rawMaterials: { rawMaterialId: string; requiredQuantity: number }[] },
   { rejectValue: string }
 >("inventory/createProduct", async (payload, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post<Product>("/products", payload);
-    return response.data;
+    // 1) Criar o produto (só name + value)
+    const { rawMaterials, ...productData } = payload;
+    const createRes = await axiosInstance.post<Product>("/products", productData);
+    const productId = createRes.data.id;
+
+    // 2) Adicionar cada material via rota separada
+    for (const mat of rawMaterials) {
+      await axiosInstance.post(`/products/${productId}/raw-materials`, mat);
+    }
+
+    // 3) Buscar o produto completo com os materiais
+    const fullRes = await axiosInstance.get<Product>(`/products/${productId}`);
+    return fullRes.data;
   } catch (error: unknown) {
     const message =
       error instanceof Error
         ? error.message
         : "Failed to create product.";
+    return rejectWithValue(message);
+  }
+});
+
+/**
+ * Deletes a product by ID.
+ * DELETE /products/:id
+ */
+export const deleteProduct = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("inventory/deleteProduct", async (productId, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/products/${productId}`);
+    return productId;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to delete product.";
+    return rejectWithValue(message);
+  }
+});
+
+/**
+ * Updates an existing product, re-syncs raw materials.
+ * 1) PUT    /products/:id                        → atualiza name + value
+ * 2) DELETE /products/raw-materials/:assocId      → remove materiais antigos
+ * 3) POST   /products/:id/raw-materials           → adiciona novos materiais
+ * 4) GET    /products/:id                         → retorna produto completo
+ */
+export const updateProduct = createAsyncThunk<
+  Product,
+  {
+    id: string;
+    name: string;
+    value: number;
+    rawMaterials: { rawMaterialId: string; requiredQuantity: number }[];
+    existingRawMaterials?: { id: string }[];
+  },
+  { rejectValue: string }
+>("inventory/updateProduct", async ({ id, rawMaterials, existingRawMaterials, ...productData }, { rejectWithValue }) => {
+  try {
+    // 1) Atualizar o produto (name + value)
+    await axiosInstance.put(`/products/${id}`, productData);
+
+    // 2) Remover associações antigas
+    if (existingRawMaterials && existingRawMaterials.length > 0) {
+      for (const old of existingRawMaterials) {
+        await axiosInstance.delete(`/products/raw-materials/${old.id}`);
+      }
+    }
+
+    // 3) Adicionar novos materiais
+    for (const mat of rawMaterials) {
+      await axiosInstance.post(`/products/${id}/raw-materials`, mat);
+    }
+
+    // 4) Buscar produto completo
+    const fullRes = await axiosInstance.get<Product>(`/products/${id}`);
+    return fullRes.data;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to update product.";
     return rejectWithValue(message);
   }
 });
