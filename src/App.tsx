@@ -5,8 +5,8 @@ import MaterialForm from "./components/MaterialForm";
 function Dashboard() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-      <p className="mt-2 text-gray-400">Welcome to InvenTrack inventory management system.</p>
+      <h1 className="text-2xl font-bold text-white">Painel</h1>
+      <p className="mt-2 text-gray-400">Bem-vindo ao sistema de gestão de estoque Autoflex.</p>
     </div>
   );
 }
@@ -14,8 +14,8 @@ function Dashboard() {
 function Products() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-white">Products</h1>
-      <p className="mt-2 text-gray-400">Product management coming soon.</p>
+      <h1 className="text-2xl font-bold text-white">Produtos</h1>
+      <p className="mt-2 text-gray-400">Gestão de produtos em breve.</p>
     </div>
   );
 }

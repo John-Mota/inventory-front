@@ -2,9 +2,9 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 
 const navLinks = [
-  { to: "/", label: "Dashboard" },
-  { to: "/products", label: "Products" },
-  { to: "/raw-materials", label: "Raw Materials" },
+  { to: "/", label: "Painel" },
+  { to: "/products", label: "Produtos" },
+  { to: "/raw-materials", label: "Matérias-Primas" },
 ];
 
 export default function Header() {
@@ -34,12 +34,12 @@ export default function Header() {
           <NavLink
             to="/"
             className="flex items-center gap-2 text-xl font-bold text-white hover:text-indigo-300 transition-colors duration-200"
-            aria-label="InvenTrack Home"
+            aria-label="Autoflex Home"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-lg">
               📦
             </span>
-            <span>InvenTrack</span>
+            <span>Autoflex</span>
           </NavLink>
 
           {/* Desktop Navigation */}
