@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
+  // baseURL: "http://localhost:8080/api",
   baseURL: "https://inventory-4xyq.onrender.com/api",
   timeout: 60_000,
   headers: {

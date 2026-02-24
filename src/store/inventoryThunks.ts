@@ -2,8 +2,11 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../api/axiosInstance";
 import type {
   RawMaterial,
+  Product,
   ProductionSuggestion,
 } from "../types/inventory";
+
+// ── Raw Materials ──────────────────────────────────────────────
 
 /**
  * Fetches the list of raw materials from the API.
@@ -13,7 +16,7 @@ export const fetchMaterials = createAsyncThunk<
   RawMaterial[],
   void,
   { rejectValue: string }
->("material/fetchMaterials", async (_, { rejectWithValue }) => {
+>("inventory/fetchMaterials", async (_, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.get<RawMaterial[]>("/raw-materials");
     return response.data;
@@ -21,7 +24,7 @@ export const fetchMaterials = createAsyncThunk<
     const message =
       error instanceof Error
         ? error.message
-        : "Falha ao buscar matérias-primas.";
+        : "Failed to fetch raw materials.";
     return rejectWithValue(message);
   }
 });
@@ -34,7 +37,7 @@ export const createMaterial = createAsyncThunk<
   RawMaterial,
   { name: string; stockQuantity: number },
   { rejectValue: string }
->("material/createMaterial", async (payload, { rejectWithValue }) => {
+>("inventory/createMaterial", async (payload, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post<RawMaterial>(
       "/raw-materials",
@@ -45,13 +48,59 @@ export const createMaterial = createAsyncThunk<
     const message =
       error instanceof Error
         ? error.message
-        : "Falha ao cadastrar matéria-prima.";
+        : "Failed to create raw material.";
+    return rejectWithValue(message);
+  }
+});
+
+// ── Products ───────────────────────────────────────────────────
+
+/**
+ * Fetches the list of products from the API.
+ * GET /products
+ */
+export const fetchProducts = createAsyncThunk<
+  Product[],
+  void,
+  { rejectValue: string }
+>("inventory/fetchProducts", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get<Product[]>("/products");
+    return response.data;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to fetch products.";
     return rejectWithValue(message);
   }
 });
 
 /**
- * Fetches production suggestions based on current stock.
+ * Creates a new product with associated materials (RF007).
+ * POST /products
+ */
+export const createProduct = createAsyncThunk<
+  Product,
+  { name: string; price: number; materials: { materialId: number; neededQuantity: number }[] },
+  { rejectValue: string }
+>("inventory/createProduct", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.post<Product>("/products", payload);
+    return response.data;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to create product.";
+    return rejectWithValue(message);
+  }
+});
+
+// ── Production Suggestions ─────────────────────────────────────
+
+/**
+ * Fetches production suggestions based on current stock (RF008).
  * GET /production-suggestions
  */
 export const fetchProductionSuggestions = createAsyncThunk<
@@ -59,18 +108,18 @@ export const fetchProductionSuggestions = createAsyncThunk<
   void,
   { rejectValue: string }
 >(
-  "material/fetchProductionSuggestions",
+  "inventory/fetchProductionSuggestions",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get<ProductionSuggestion[]>(
-        "/production-suggestions"
+        "/production/suggestions"
       );
       return response.data;
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : "Falha ao buscar sugestões de produção.";
+          : "Failed to fetch production suggestions.";
       return rejectWithValue(message);
     }
   }
