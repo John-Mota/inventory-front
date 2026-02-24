@@ -114,9 +114,6 @@ export default function ProductFormModal({ isOpen, onClose, initialData }: Produ
             name: name.trim(),
             value: priceValue,
             rawMaterials: entries,
-            existingRawMaterials: (initialData.rawMaterials ?? [])
-              .filter((m) => m.id)
-              .map((m) => ({ id: m.id! })),
           })
         ).unwrap();
       } else {

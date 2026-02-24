@@ -93,14 +93,18 @@ export const createProduct = createAsyncThunk<
     const createRes = await axiosInstance.post<Product>("/products", productData);
     const productId = createRes.data.id;
 
-    // 2) Adicionar cada material via rota separada
+    // 2) Adicionar cada material via rota separada e coletar respostas
+    const materialsResponses = [];
     for (const mat of rawMaterials) {
-      await axiosInstance.post(`/products/${productId}/raw-materials`, mat);
+      const matRes = await axiosInstance.post(`/products/${productId}/raw-materials`, mat);
+      materialsResponses.push(matRes.data);
     }
 
-    // 3) Buscar o produto completo com os materiais
-    const fullRes = await axiosInstance.get<Product>(`/products/${productId}`);
-    return fullRes.data;
+    // 3) Montar o produto completo com os materiais
+    return {
+      ...createRes.data,
+      rawMaterials: materialsResponses,
+    };
   } catch (error: unknown) {
     const message =
       error instanceof Error
@@ -145,29 +149,13 @@ export const updateProduct = createAsyncThunk<
     name: string;
     value: number;
     rawMaterials: { rawMaterialId: string; requiredQuantity: number }[];
-    existingRawMaterials?: { id: string }[];
   },
   { rejectValue: string }
->("inventory/updateProduct", async ({ id, rawMaterials, existingRawMaterials, ...productData }, { rejectWithValue }) => {
+>("inventory/updateProduct", async ({ id, ...payload }, { rejectWithValue }) => {
   try {
-    // 1) Atualizar o produto (name + value)
-    await axiosInstance.put(`/products/${id}`, productData);
-
-    // 2) Remover associações antigas
-    if (existingRawMaterials && existingRawMaterials.length > 0) {
-      for (const old of existingRawMaterials) {
-        await axiosInstance.delete(`/products/raw-materials/${old.id}`);
-      }
-    }
-
-    // 3) Adicionar novos materiais
-    for (const mat of rawMaterials) {
-      await axiosInstance.post(`/products/${id}/raw-materials`, mat);
-    }
-
-    // 4) Buscar produto completo
-    const fullRes = await axiosInstance.get<Product>(`/products/${id}`);
-    return fullRes.data;
+    // PUT envia name + value + rawMaterials tudo junto
+    const response = await axiosInstance.put<Product>(`/products/${id}`, payload);
+    return response.data;
   } catch (error: unknown) {
     const message =
       error instanceof Error
