@@ -16,7 +16,7 @@ export default function ProductsPage() {
     }
   }, [dispatch, materials.length]);
 
-  const getMaterialName = (materialId: number) => {
+  const getMaterialName = (materialId: string) => {
     const found = materials.find((m) => m.id === materialId);
     return found ? found.name : `#${materialId}`;
   };
@@ -73,12 +73,12 @@ export default function ProductsPage() {
                   <td className="px-6 py-4 font-medium text-white">{product.name}</td>
                   <td className="px-6 py-4">
                     <span className="font-semibold text-emerald-400">
-                      R$ {product.price.toFixed(2)}
+                      R$ {(product.value ?? 0).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1.5">
-                      {product.materials.map((mat, idx) => (
+                      {(product.materials ?? []).map((mat, idx) => (
                         <span
                           key={idx}
                           className="inline-flex items-center gap-1 rounded-full bg-gray-700 px-2.5 py-1 text-xs text-gray-300"

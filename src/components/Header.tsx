@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import headerLogo from "../assets/autoflex-header.png";
 
 const navLinks = [
   { to: "/", label: "Painel" },
@@ -28,7 +29,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 shadow-lg">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="px-[15px]">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <NavLink
@@ -36,9 +37,7 @@ export default function Header() {
             className="flex items-center gap-2 text-xl font-bold text-white hover:text-indigo-300 transition-colors duration-200"
             aria-label="Autoflex Home"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-lg">
-              📦
-            </span>
+            <img src={headerLogo} alt="Autoflex" className="h-9 w-9 rounded-lg object-contain" />
             <span>Autoflex</span>
           </NavLink>
 

@@ -37,7 +37,7 @@ const materialSlice = createSlice({
       action: PayloadAction<Omit<RawMaterial, "id">>
     ) => {
       const newMaterial: RawMaterial = {
-        id: Date.now(),
+        id: String(Date.now()),
         ...action.payload,
       };
       state.materials.push(newMaterial);

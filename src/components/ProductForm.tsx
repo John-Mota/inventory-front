@@ -5,7 +5,7 @@ import { clearError } from "../store/materialSlice";
 import Spinner from "./Spinner";
 
 interface MaterialEntry {
-  materialId: number;
+  materialId: string;
   neededQuantity: number;
 }
 
@@ -14,12 +14,29 @@ interface ProductFormModalProps {
   onClose: () => void;
 }
 
+function formatCurrencyInput(raw: string): string {
+  // Remove tudo que não é dígito
+  const digits = raw.replace(/\D/g, "");
+  // Converte para centavos → reais
+  const cents = parseInt(digits || "0", 10);
+  const value = (cents / 100).toFixed(2);
+  // Formata com separador brasileiro
+  const [intPart, decPart] = value.split(".");
+  const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${formattedInt},${decPart}`;
+}
+
+function parseCurrencyValue(formatted: string): number {
+  const digits = formatted.replace(/\D/g, "");
+  return parseInt(digits || "0", 10) / 100;
+}
+
 export default function ProductFormModal({ isOpen, onClose }: ProductFormModalProps) {
   const dispatch = useAppDispatch();
   const { materials, loading, error } = useAppSelector((state) => state.material);
 
   const [name, setName] = useState("");
-  const [price, setPrice] = useState<number | "">("");
+  const [priceDisplay, setPriceDisplay] = useState("0,00");
   const [entries, setEntries] = useState<MaterialEntry[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -29,12 +46,13 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
     }
   }, [dispatch, isOpen, materials.length]);
 
+  const priceValue = parseCurrencyValue(priceDisplay);
+
   const isFormValid =
     name.trim().length > 0 &&
-    price !== "" &&
-    Number(price) > 0 &&
+    priceValue > 0 &&
     entries.length > 0 &&
-    entries.every((e) => e.neededQuantity > 0);
+    entries.every((e) => e.materialId !== "" && e.neededQuantity > 0);
 
   const addEntry = () => {
     if (materials.length === 0) return;
@@ -48,10 +66,15 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
     setEntries((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateEntry = (index: number, field: keyof MaterialEntry, value: number) => {
+  const updateEntry = (index: number, field: keyof MaterialEntry, value: string | number) => {
     setEntries((prev) =>
       prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry))
     );
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setPriceDisplay(formatCurrencyInput(raw));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -63,13 +86,13 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
       await dispatch(
         createProduct({
           name: name.trim(),
-          price: Number(price),
+          value: priceValue,
           materials: entries,
         })
       ).unwrap();
 
       setName("");
-      setPrice("");
+      setPriceDisplay("0,00");
       setEntries([]);
       setShowSuccess(true);
 
@@ -147,19 +170,20 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
             {/* Price */}
             <div>
               <label htmlFor="product-price" className="mb-2 block text-sm font-medium text-gray-300">
-                Preço (R$)
+                Valor (R$)
               </label>
-              <input
-                id="product-price"
-                type="number"
-                required
-                min={0.01}
-                step={0.01}
-                value={price}
-                onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="Ex: 149,90"
-                className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-              />
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+                <input
+                  id="product-price"
+                  type="text"
+                  inputMode="numeric"
+                  required
+                  value={priceDisplay}
+                  onChange={handlePriceChange}
+                  className="w-full rounded-lg border border-gray-600 bg-gray-700 pl-11 pr-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                />
+              </div>
             </div>
 
             {/* Materials Section */}
@@ -198,12 +222,12 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                       <select
                         id={`mat-select-${index}`}
                         value={entry.materialId}
-                        onChange={(e) => updateEntry(index, "materialId", Number(e.target.value))}
+                        onChange={(e) => updateEntry(index, "materialId", e.target.value)}
                         className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                       >
                         {materials.map((m) => (
                           <option key={m.id} value={m.id}>
-                            {m.name} (stock: {m.stockQuantity})
+                            {m.name} (estoque: {m.stockQuantity})
                           </option>
                         ))}
                       </select>

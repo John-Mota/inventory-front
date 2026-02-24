@@ -1,15 +1,15 @@
 export interface RawMaterial {
-  id: number;
+  id: string;
   name: string;
   stockQuantity: number;
 }
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
-  price: number;
+  value: number;
   materials: {
-    materialId: number;
+    materialId: string;
     neededQuantity: number;
   }[];
 }

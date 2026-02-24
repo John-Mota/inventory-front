@@ -82,7 +82,7 @@ export const fetchProducts = createAsyncThunk<
  */
 export const createProduct = createAsyncThunk<
   Product,
-  { name: string; price: number; materials: { materialId: number; neededQuantity: number }[] },
+  { name: string; value: number; materials: { materialId: string; neededQuantity: number }[] },
   { rejectValue: string }
 >("inventory/createProduct", async (payload, { rejectWithValue }) => {
   try {
