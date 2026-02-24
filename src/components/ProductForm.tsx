@@ -99,7 +99,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
       <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-800 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
-          <h2 className="text-lg font-semibold text-white">New Product</h2>
+          <h2 className="text-lg font-semibold text-white">Novo Produto</h2>
           <button
             type="button"
             onClick={onClose}
@@ -116,7 +116,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
         <div className="px-6 py-5">
           {showSuccess && (
             <div className="mb-4 rounded-lg border border-green-600 bg-green-900/40 px-4 py-3 text-green-300" role="alert">
-              ✅ Product saved successfully!
+              ✅ Produto salvo com sucesso!
             </div>
           )}
 
@@ -130,7 +130,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
             {/* Product Name */}
             <div>
               <label htmlFor="product-name" className="mb-2 block text-sm font-medium text-gray-300">
-                Product Name
+                Nome do Produto
               </label>
               <input
                 id="product-name"
@@ -138,7 +138,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Steel Frame, Wooden Chair"
+                placeholder="Ex: Estrutura de Aço, Cadeira de Madeira"
                 className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 autoFocus
               />
@@ -147,7 +147,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
             {/* Price */}
             <div>
               <label htmlFor="product-price" className="mb-2 block text-sm font-medium text-gray-300">
-                Price (R$)
+                Preço (R$)
               </label>
               <input
                 id="product-price"
@@ -157,7 +157,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                 step={0.01}
                 value={price}
                 onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="e.g. 149.90"
+                placeholder="Ex: 149,90"
                 className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>
@@ -165,26 +165,26 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
             {/* Materials Section */}
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-300">Required Materials</label>
+                <label className="text-sm font-medium text-gray-300">Materiais Necessários</label>
                 <button
                   type="button"
                   onClick={addEntry}
                   disabled={materials.length === 0}
                   className="rounded-lg bg-gray-700 px-3 py-1.5 text-xs font-medium text-indigo-300 transition-colors hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  + Add Material
+                  + Adicionar Material
                 </button>
               </div>
 
               {materials.length === 0 && (
                 <p className="rounded-lg border border-amber-600/30 bg-amber-900/20 px-4 py-3 text-sm text-amber-300">
-                  ⚠️ No raw materials available. Register materials first.
+                  ⚠️ Nenhuma matéria-prima disponível. Cadastre materiais primeiro.
                 </p>
               )}
 
               {entries.length === 0 && materials.length > 0 && (
                 <p className="text-sm text-gray-500">
-                  Click "+ Add Material" to associate raw materials.
+                  Clique em "+ Adicionar Material" para associar matérias-primas.
                 </p>
               )}
 
@@ -210,7 +210,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                     </div>
                     <div className="w-24">
                       <label htmlFor={`mat-qty-${index}`} className="mb-1 block text-xs font-medium text-gray-400">
-                        Qty
+                        Qtd.
                       </label>
                       <input
                         id={`mat-qty-${index}`}
@@ -243,7 +243,7 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                 onClick={onClose}
                 className="flex-1 rounded-lg border border-gray-600 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 type="submit"
@@ -253,10 +253,10 @@ export default function ProductFormModal({ isOpen, onClose }: ProductFormModalPr
                 {loading ? (
                   <>
                     <Spinner size="sm" />
-                    Saving...
+                    Salvando...
                   </>
                 ) : (
-                  "Save Product"
+                  "Salvar Produto"
                 )}
               </button>
             </div>

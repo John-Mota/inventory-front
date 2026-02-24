@@ -63,7 +63,7 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-8 text-2xl font-bold text-white">Dashboard</h1>
+      <h1 className="mb-8 text-2xl font-bold text-white">Painel</h1>
 
       {/* Error Banner */}
       {error && (
@@ -83,7 +83,7 @@ export default function Dashboard() {
         ) : (
           <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
             <p className="mb-1 text-sm font-medium text-gray-400">
-              Total Potential Revenue
+              Receita Potencial Total
             </p>
             <p className="text-3xl font-bold text-emerald-400">
               {formatCurrency(totalRevenue)}
@@ -97,7 +97,7 @@ export default function Dashboard() {
         ) : (
           <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
             <p className="mb-1 text-sm font-medium text-gray-400">
-              Total Products
+              Total de Produtos
             </p>
             <p className="text-3xl font-bold text-indigo-400">
               {totalProducts}
@@ -117,22 +117,22 @@ export default function Dashboard() {
             }`}
           >
             <p className="mb-1 text-sm font-medium text-gray-400">
-              Stock Status
+              Status do Estoque
             </p>
             {hasLowStock ? (
               <>
                 <p className="text-lg font-bold text-amber-400">
-                  ⚠️ Low Stock
+                  ⚠️ Estoque Baixo
                 </p>
                 <p className="mt-1 text-sm text-amber-300/80">
                   {lowStockMaterials.length}{" "}
-                  {lowStockMaterials.length === 1 ? "material" : "materials"} with
-                  less than {lowStockThreshold} units
+                  {lowStockMaterials.length === 1 ? "material" : "materiais"} com
+                  menos de {lowStockThreshold} unidades
                 </p>
               </>
             ) : (
               <p className="text-lg font-bold text-emerald-400">
-                ✅ Stock OK
+                ✅ Estoque OK
               </p>
             )}
           </div>
@@ -143,12 +143,12 @@ export default function Dashboard() {
       <div className="rounded-xl border border-gray-700 bg-gray-800 shadow-lg">
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
           <h2 className="text-lg font-semibold text-white">
-            Production Suggestions
+            Sugestões de Produção
           </h2>
           {loading && (
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Spinner size="sm" />
-              Loading...
+              Carregando...
             </div>
           )}
         </div>
@@ -158,9 +158,9 @@ export default function Dashboard() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-700 text-sm text-gray-400">
-                <th className="px-6 py-3 font-medium">Product Name</th>
-                <th className="px-6 py-3 font-medium">Quantity to Produce</th>
-                <th className="px-6 py-3 font-medium">Total Potential Value</th>
+                <th className="px-6 py-3 font-medium">Produto</th>
+                <th className="px-6 py-3 font-medium">Qtd. a Produzir</th>
+                <th className="px-6 py-3 font-medium">Valor Total Potencial</th>
               </tr>
             </thead>
             <tbody>
@@ -177,7 +177,7 @@ export default function Dashboard() {
                     colSpan={3}
                     className="px-6 py-10 text-center text-gray-500"
                   >
-                    No production suggestions available at this time.
+                    Nenhuma sugestão de produção disponível no momento.
                   </td>
                 </tr>
               ) : (
@@ -224,13 +224,13 @@ export default function Dashboard() {
                   {suggestion.productName}
                 </p>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Qty to Produce</span>
+                  <span className="text-gray-400">Qtd. a Produzir</span>
                   <span className="inline-flex items-center rounded-full bg-indigo-900/40 px-3 py-1 font-medium text-indigo-300">
                     {suggestion.quantityToProduce}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Total Value</span>
+                  <span className="text-gray-400">Valor Total</span>
                   <span className="font-semibold text-emerald-400">
                     {formatCurrency(suggestion.totalValue)}
                   </span>

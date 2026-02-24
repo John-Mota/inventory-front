@@ -65,7 +65,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
       <div className="w-full max-w-md rounded-2xl border border-gray-700 bg-gray-800 shadow-2xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
-          <h2 className="text-lg font-semibold text-white">New Raw Material</h2>
+          <h2 className="text-lg font-semibold text-white">Nova Matéria-Prima</h2>
           <button
             type="button"
             onClick={onClose}
@@ -85,7 +85,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
               className="mb-4 rounded-lg border border-green-600 bg-green-900/40 px-4 py-3 text-green-300"
               role="alert"
             >
-              ✅ Material saved successfully!
+              ✅ Material salvo com sucesso!
             </div>
           )}
 
@@ -105,7 +105,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
                 htmlFor="material-name"
                 className="mb-2 block text-sm font-medium text-gray-300"
               >
-                Name
+                Nome
               </label>
               <input
                 id="material-name"
@@ -113,7 +113,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Steel, Wood, Plastic"
+                placeholder="Ex: Aço, Madeira, Plástico"
                 className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 autoFocus
               />
@@ -125,7 +125,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
                 htmlFor="stock-quantity"
                 className="mb-2 block text-sm font-medium text-gray-300"
               >
-                Stock Quantity
+                Quantidade em Estoque
               </label>
               <input
                 id="stock-quantity"
@@ -138,7 +138,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
                     e.target.value === "" ? "" : Number(e.target.value)
                   )
                 }
-                placeholder="e.g. 100"
+                placeholder="Ex: 100"
                 className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2.5 text-white placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>
@@ -150,7 +150,7 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
                 onClick={onClose}
                 className="flex-1 rounded-lg border border-gray-600 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 type="submit"
@@ -160,10 +160,10 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
                 {loading ? (
                   <>
                     <Spinner size="sm" />
-                    Saving...
+                    Salvando...
                   </>
                 ) : (
-                  "Save"
+                  "Salvar"
                 )}
               </button>
             </div>

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 
 const navLinks = [
-  { to: "/", label: "Dashboard" },
-  { to: "/materials", label: "Materials" },
-  { to: "/products", label: "Products" },
+  { to: "/", label: "Painel" },
+  { to: "/materials", label: "Matérias-Primas" },
+  { to: "/products", label: "Produtos" },
 ];
 
 export default function Header() {
