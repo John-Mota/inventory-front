@@ -37,7 +37,7 @@ export default function Dashboard() {
   }, [dispatch]);
 
   const totalRevenue = suggestions.reduce(
-    (sum, item) => sum + item.totalValue,
+    (sum, item) => sum + (Number(item.totalValue) || 0),
     0
   );
 
@@ -57,7 +57,7 @@ export default function Dashboard() {
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(value);
+    }).format(Number(value) || 0);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
