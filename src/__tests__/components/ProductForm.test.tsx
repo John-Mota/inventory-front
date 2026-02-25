@@ -1,9 +1,9 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProductFormModal from '../../components/ProductForm';
-import { renderWithProviders } from '../utils/test-utils';
+import { renderWithProviders } from '../../utils/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as inventoryThunks from '../store/inventoryThunks';
+import * as inventoryThunks from '../../store/inventoryThunks';
 
 describe('ProductFormModal', () => {
   const onCloseMock = vi.fn();

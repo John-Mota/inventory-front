@@ -1,8 +1,8 @@
 import { screen } from '@testing-library/react';
 import Dashboard from '../../components/Dashboard';
-import { renderWithProviders } from '../utils/test-utils';
+import { renderWithProviders } from '../../utils/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as inventoryThunks from '../store/inventoryThunks';
+import * as inventoryThunks from '../../store/inventoryThunks';
 
 describe('Dashboard', () => {
   beforeEach(() => {

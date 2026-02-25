@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import materialReducer, { addMaterial, clearError } from "./materialSlice";
+import materialReducer, { addMaterial, clearError } from "../../store/materialSlice";
 import {
   fetchMaterials,
   createMaterial,
@@ -8,8 +8,8 @@ import {
   deleteProduct,
   updateProduct,
   fetchProductionSuggestions,
-} from "./inventoryThunks";
-import type { RawMaterial, Product, ProductionSuggestion } from "../types/inventory";
+} from "../../store/inventoryThunks";
+import type { RawMaterial, Product, ProductionSuggestion } from "../../types/inventory";
 
 describe("materialSlice", () => {
   const initialState = {
@@ -27,7 +27,7 @@ describe("materialSlice", () => {
 
   // Verifica se a ação addMaterial adiciona um material ao estado
   it("should handle addMaterial", () => {
-    const newMaterial = { name: "Wood", unit: "kg" as const, quantity: 10, price: 50 };
+    const newMaterial = { name: "Wood", stockQuantity: 10 };
     const actual = materialReducer(initialState, addMaterial(newMaterial));
     expect(actual.materials.length).toBe(1);
     expect(actual.materials[0].name).toBe("Wood");
@@ -52,7 +52,7 @@ describe("materialSlice", () => {
 
     // Verifica a ação concluída de buscar materiais
     it("should handle fetchMaterials.fulfilled", () => {
-      const materials: RawMaterial[] = [{ id: "1", name: "Wood", unit: "kg", quantity: 10, price: 50 }];
+      const materials: RawMaterial[] = [{ id: "1", name: "Wood", stockQuantity: 10 }];
       const actual = materialReducer(initialState, fetchMaterials.fulfilled(materials, "reqId"));
       expect(actual.loading).toBe(false);
       expect(actual.materials).toEqual(materials);
@@ -76,7 +76,7 @@ describe("materialSlice", () => {
 
     // Verifica a ação concluída de criar material
     it("should handle createMaterial.fulfilled", () => {
-      const material: RawMaterial = { id: "1", name: "Wood", unit: "kg", quantity: 10, price: 50 };
+      const material: RawMaterial = { id: "1", name: "Wood", stockQuantity: 10 };
       const actual = materialReducer(initialState, createMaterial.fulfilled(material, "reqId", material));
       expect(actual.loading).toBe(false);
       expect(actual.materials).toEqual([material]);
@@ -105,7 +105,7 @@ describe("materialSlice", () => {
 
     // Verifica a ação concluída de buscar produtos
     it("should handle fetchProducts.fulfilled", () => {
-      const products: Product[] = [{ id: "1", name: "Chair", quantity: 5, price: 100, rawMaterials: [] }];
+      const products: Product[] = [{ id: "1", name: "Chair", value: 100, rawMaterials: [] }];
       const actual = materialReducer(initialState, fetchProducts.fulfilled(products, "reqId"));
       expect(actual.loading).toBe(false);
       expect(actual.products).toEqual(products);
@@ -131,7 +131,7 @@ describe("materialSlice", () => {
 
     // Verifica a ação concluída de criar um produto
     it("should handle createProduct.fulfilled", () => {
-      const product: Product = { id: "1", name: "Chair", quantity: 5, price: 100, rawMaterials: [] };
+      const product: Product = { id: "1", name: "Chair", value: 100, rawMaterials: [] };
       const actual = materialReducer(initialState, createProduct.fulfilled(product, "reqId", {} as any));
       expect(actual.loading).toBe(false);
       expect(actual.products).toEqual([product]);
@@ -149,10 +149,10 @@ describe("materialSlice", () => {
     it("should handle updateProduct.fulfilled", () => {
       const stateWithProduct = {
         ...initialState,
-        products: [{ id: "1", name: "Chair", quantity: 5, price: 100, rawMaterials: [] }]
+        products: [{ id: "1", name: "Chair", value: 100, rawMaterials: [] }]
       };
-      const updatedProduct: Product = { id: "1", name: "Better Chair", quantity: 10, price: 150, rawMaterials: [] };
-      const actual = materialReducer(stateWithProduct, updateProduct.fulfilled(updatedProduct, "reqId", { id: "1", product: updatedProduct }));
+      const updatedProduct: Product = { id: "1", name: "Better Chair", value: 150, rawMaterials: [] };
+      const actual = materialReducer(stateWithProduct, updateProduct.fulfilled(updatedProduct, "reqId", updatedProduct));
       
       expect(actual.loading).toBe(false);
       expect(actual.products[0]).toEqual(updatedProduct);
@@ -170,7 +170,7 @@ describe("materialSlice", () => {
     it("should handle deleteProduct.fulfilled", () => {
       const stateWithProduct = {
         ...initialState,
-        products: [{ id: "1", name: "Chair", quantity: 5, price: 100, rawMaterials: [] }]
+        products: [{ id: "1", name: "Chair", value: 100, rawMaterials: [] }]
       };
       const actual = materialReducer(stateWithProduct, deleteProduct.fulfilled("1", "reqId", "1"));
       
@@ -194,7 +194,7 @@ describe("materialSlice", () => {
 
     // Verifica a ação concluída de buscar sugestões de produção
     it("should handle fetchProductionSuggestions.fulfilled", () => {
-      const suggestions: ProductionSuggestion[] = [{ productId: "1", productName: "Chair", maxProducible: 2 }];
+      const suggestions: ProductionSuggestion[] = [{ productName: "Chair", quantityToProduce: 2, totalValue: 200 }];
       const actual = materialReducer(initialState, fetchProductionSuggestions.fulfilled(suggestions, "reqId"));
       
       expect(actual.loading).toBe(false);
@@ -230,10 +230,10 @@ describe("materialSlice", () => {
     it("should handle updateProduct.fulfilled when product not found", () => {
       const stateWithProduct = {
         ...initialState,
-        products: [{ id: "1", name: "Chair", quantity: 5, value: 100, rawMaterials: [] }] as any
+        products: [{ id: "1", name: "Chair", value: 100, rawMaterials: [] }] as any
       };
-      const updatedProduct: Product = { id: "999", name: "Ghost Chair", quantity: 10, value: 150, rawMaterials: [] };
-      const actual = materialReducer(stateWithProduct, updateProduct.fulfilled(updatedProduct, "reqId", { id: "999", product: updatedProduct }));
+      const updatedProduct: Product = { id: "999", name: "Ghost Chair", value: 150, rawMaterials: [] };
+      const actual = materialReducer(stateWithProduct, updateProduct.fulfilled(updatedProduct, "reqId", updatedProduct));
       
       // Should remain unchanged
       expect(actual.products[0].id).toBe("1");

@@ -1,9 +1,9 @@
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MaterialFormModal from '../../components/MaterialForm';
-import { renderWithProviders } from '../utils/test-utils';
+import { renderWithProviders } from '../../utils/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as inventoryThunks from '../store/inventoryThunks';
+import * as inventoryThunks from '../../store/inventoryThunks';
 
 describe('MaterialFormModal', () => {
   const onCloseMock = vi.fn();

@@ -7,12 +7,12 @@ import {
   deleteProduct,
   updateProduct,
   fetchProductionSuggestions,
-} from './inventoryThunks';
-import axiosInstance from '../api/axiosInstance';
+} from '../../store/inventoryThunks';
+import axiosInstance from '../../api/axiosInstance';
 import { configureStore } from '@reduxjs/toolkit';
-import materialReducer from './materialSlice';
+import materialReducer from '../../store/materialSlice';
 
-vi.mock('../api/axiosInstance', () => ({
+vi.mock('../../api/axiosInstance', () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
