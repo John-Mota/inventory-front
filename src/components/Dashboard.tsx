@@ -36,7 +36,6 @@ export default function Dashboard() {
     dispatch(fetchMaterials());
   }, [dispatch]);
 
-  // --- Computed values ---
   const totalRevenue = suggestions.reduce(
     (sum, item) => sum + item.totalValue,
     0
@@ -50,7 +49,6 @@ export default function Dashboard() {
   );
   const hasLowStock = lowStockMaterials.length > 0;
 
-  // Ensure sorted by highest value (RF004)
   const sortedSuggestions = [...suggestions].sort(
     (a, b) => b.totalValue - a.totalValue
   );
