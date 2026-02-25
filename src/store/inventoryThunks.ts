@@ -53,6 +53,48 @@ export const createMaterial = createAsyncThunk<
   }
 });
 
+/**
+ * Updates an existing raw material.
+ * PUT /raw-materials/:id
+ */
+export const updateMaterial = createAsyncThunk<
+  RawMaterial,
+  { id: string; name: string; stockQuantity: number },
+  { rejectValue: string }
+>("inventory/updateMaterial", async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.put<RawMaterial>(`/raw-materials/${id}`, payload);
+    return response.data;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to update raw material.";
+    return rejectWithValue(message);
+  }
+});
+
+/**
+ * Deletes a raw material by ID.
+ * DELETE /raw-materials/:id
+ */
+export const deleteMaterial = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("inventory/deleteMaterial", async (materialId, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/raw-materials/${materialId}`);
+    return materialId;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to delete raw material.";
+    return rejectWithValue(message);
+  }
+});
+
 // ── Products ───────────────────────────────────────────────────
 
 /**

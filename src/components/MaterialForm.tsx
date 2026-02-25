@@ -1,21 +1,36 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { createMaterial } from "../store/inventoryThunks";
+import { createMaterial, updateMaterial } from "../store/inventoryThunks";
 import { clearError } from "../store/materialSlice";
+import type { RawMaterial } from "../types/inventory";
 import Spinner from "./Spinner";
 
 interface MaterialFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialData?: RawMaterial | null;
 }
 
-export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModalProps) {
+export default function MaterialFormModal({ isOpen, onClose, initialData }: MaterialFormModalProps) {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.material);
 
   const [name, setName] = useState("");
   const [stockQuantity, setStockQuantity] = useState<number | "">("");
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setName(initialData.name);
+        setStockQuantity(initialData.stockQuantity);
+      } else {
+        setName("");
+        setStockQuantity("");
+      }
+      setShowSuccess(false);
+    }
+  }, [isOpen, initialData]);
 
   const isFormValid = name.trim().length > 0 && stockQuantity !== "" && Number(stockQuantity) >= 0;
 
@@ -26,15 +41,24 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
     if (!isFormValid) return;
 
     try {
-      await dispatch(
-        createMaterial({
-          name: name.trim(),
-          stockQuantity: Number(stockQuantity),
-        })
-      ).unwrap();
-
-      setName("");
-      setStockQuantity("");
+      if (initialData) {
+        await dispatch(
+          updateMaterial({
+            id: initialData.id,
+            name: name.trim(),
+            stockQuantity: Number(stockQuantity),
+          })
+        ).unwrap();
+      } else {
+        await dispatch(
+          createMaterial({
+            name: name.trim(),
+            stockQuantity: Number(stockQuantity),
+          })
+        ).unwrap();
+        setName("");
+        setStockQuantity("");
+      }
       setShowSuccess(true);
 
       setTimeout(() => {
@@ -65,7 +89,9 @@ export default function MaterialFormModal({ isOpen, onClose }: MaterialFormModal
       <div className="w-full max-w-md rounded-2xl border border-gray-700 bg-gray-800 shadow-2xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
-          <h2 className="text-lg font-semibold text-white">Nova Matéria-Prima</h2>
+          <h2 className="text-lg font-semibold text-white">
+            {initialData ? "Editar Matéria-Prima" : "Nova Matéria-Prima"}
+          </h2>
           <button
             type="button"
             onClick={onClose}

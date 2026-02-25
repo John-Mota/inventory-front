@@ -1,17 +1,29 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchMaterials } from "../store/inventoryThunks";
+import { fetchMaterials, deleteMaterial } from "../store/inventoryThunks";
 import Spinner from "./Spinner";
 import MaterialFormModal from "./MaterialForm";
+import type { RawMaterial } from "../types/inventory";
 
 export default function MaterialsPage() {
   const dispatch = useAppDispatch();
-  const { materials, loading } = useAppSelector((state) => state.material);
+  const { materials, loading, error } = useAppSelector((state) => state.material);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editMaterial, setEditMaterial] = useState<RawMaterial | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<RawMaterial | null>(null);
 
   useEffect(() => {
     dispatch(fetchMaterials());
   }, [dispatch]);
+
+  const handleDelete = async (material: RawMaterial) => {
+    try {
+      await dispatch(deleteMaterial(material.id)).unwrap();
+      setDeleteConfirm(null);
+    } catch {
+      // error handled by slice
+    }
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -29,6 +41,13 @@ export default function MaterialsPage() {
           Adicionar Material
         </button>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-600 bg-red-900/40 px-4 py-3 text-red-300" role="alert">
+          ❌ {error}
+        </div>
+      )}
 
       {/* Table */}
       {loading && materials.length === 0 ? (
@@ -95,7 +114,7 @@ export default function MaterialsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => alert("Função 'Editar Material' em desenvolvimento")}
+                        onClick={() => setEditMaterial(material)}
                         className="group relative flex h-8 w-8 items-center justify-center rounded-lg bg-gray-700/30 text-gray-400 backdrop-blur-sm transition-all hover:bg-amber-500/20 hover:text-amber-400"
                         title="Editar Material"
                       >
@@ -105,7 +124,7 @@ export default function MaterialsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => alert("Função 'Excluir Material' em desenvolvimento")}
+                        onClick={() => setDeleteConfirm(material)}
                         className="group relative flex h-8 w-8 items-center justify-center rounded-lg bg-gray-700/30 text-gray-400 backdrop-blur-sm transition-all hover:bg-red-500/20 hover:text-red-400"
                         title="Excluir Material"
                       >
@@ -122,10 +141,60 @@ export default function MaterialsPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteConfirm(null); }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-gray-700 bg-gray-800 shadow-2xl">
+            <div className="px-6 py-5 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-900/30 text-3xl">
+                🗑
+              </div>
+              <h2 className="mb-2 text-lg font-semibold text-white">Excluir Matéria-Prima</h2>
+              <p className="text-sm text-gray-400">
+                Tem certeza que deseja excluir <strong className="text-white">{deleteConfirm.name}</strong>? Esta ação não pode ser desfeita.
+              </p>
+            </div>
+            <div className="flex gap-3 border-t border-gray-700 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 rounded-lg border border-gray-600 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(deleteConfirm)}
+                disabled={loading}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Spinner size="sm" />
+                    Excluindo...
+                  </>
+                ) : (
+                  "Excluir"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal / Form */}
       <MaterialFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isModalOpen || editMaterial !== null}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditMaterial(null);
+        }}
+        initialData={editMaterial}
       />
     </div>
   );
